@@ -123,7 +123,7 @@ function ServicePage() {
   }, [courses, searchTerm, selectedCategory, priceFilter, sortBy]);
 
   return (
-    <div className="flex flex-col px-4 md:px-8 lg:px-12 py-8 bg-gray-50 min-h-screen">
+    <div className="flex flex-col py-8 bg-gray-50 min-h-screen">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-xl mb-8">
         <h1 className="text-4xl font-bold mb-2">Find Your Perfect Course</h1>
         <p className="text-lg opacity-90 mb-6">
