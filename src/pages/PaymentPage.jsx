@@ -114,7 +114,7 @@ function PaymentPage() {
         {/* Buttons */}
         <div className="flex justify-center gap-4">
           <button
-            onClick={() => navigate(`/success/${courseId}`)}
+            onClick={() => navigate(`/payment/success/${courseId}`)}
             className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
           >
             I have completed the payment
