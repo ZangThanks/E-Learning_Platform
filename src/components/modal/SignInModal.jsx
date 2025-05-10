@@ -1,43 +1,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Youtube, Instagram, Github, Linkedin, Facebook } from "lucide-react";
-
-// Dữ liệu người dùng mẫu
-const mockUsers = [
-  {
-    id: 1,
-    username: "admin",
-    password: "admin123",
-    name: "Admin User",
-    email: "admin@example.com",
-    role: "admin",
-    avatarUrl: "../avartarAdmin.png",
-  },
-  {
-    id: 2,
-    username: "teacher",
-    password: "teacher123",
-    name: "Huynh Thanh Giang",
-    email: "teacher@example.com",
-    role: "teacher",
-    avatarUrl: "../avartarAdmin.png",
-  },
-  {
-    id: 3,
-    username: "student",
-    password: "student123",
-    name: "Phan Phuoc Hiep",
-    email: "student@example.com",
-    role: "student",
-    avatarUrl: "../avartarAdmin.png",
-  },
-];
+import { mockUsers } from "../../mocks/mockUsers";
 
 function SignInModal({ isOpen, onClose, onSignUpClick }) {
-  const [userName, setUserName] = useState("");
-  const [pass, setPass] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -45,18 +14,18 @@ function SignInModal({ isOpen, onClose, onSignUpClick }) {
     }
   };
 
-  const handleSignIn = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      // Giả lập delay của API call
+      // Giả lập delay của API
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Tìm user trong dữ liệu mẫu
+      // Kiểm tra thông tin đăng nhập với dữ liệu mẫu
       const user = mockUsers.find(
-        (u) => u.username === userName && u.password === pass
+        (u) => u.email === email && u.password === password
       );
 
       if (user) {
@@ -67,22 +36,18 @@ function SignInModal({ isOpen, onClose, onSignUpClick }) {
           email: user.email,
           role: user.role,
           avatarUrl: user.avatarUrl,
-          account: {
-            user_name: user.username,
-          },
         };
 
         localStorage.setItem("user", JSON.stringify(userData));
         onClose();
         window.location.reload();
       } else {
-        setError("Tên đăng nhập hoặc mật khẩu không chính xác");
+        setError("Email hoặc mật khẩu không chính xác");
       }
     } catch (err) {
-      console.error("Sign in error:", err);
       setError("Đã xảy ra lỗi khi đăng nhập");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -124,15 +89,15 @@ function SignInModal({ isOpen, onClose, onSignUpClick }) {
                 {error}
               </div>
             )}
-            <form onSubmit={handleSignIn}>
+            <form onSubmit={handleSubmit}>
               <div className="mb-4 mt-4">
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  placeholder="Tên đăng nhập"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  disabled={isLoading}
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <div className="mb-4 mt-4">
@@ -140,19 +105,19 @@ function SignInModal({ isOpen, onClose, onSignUpClick }) {
                   type="password"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
                   placeholder="Mật khẩu"
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
-                  disabled={isLoading}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <button
                 type="submit"
                 className={`w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700 ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                  loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
-                disabled={isLoading}
+                disabled={loading}
               >
-                {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
               <div className="mt-4">
                 <input type="checkbox" /> Remember me{" "}

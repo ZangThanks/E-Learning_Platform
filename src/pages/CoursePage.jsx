@@ -15,6 +15,7 @@ import {
   FaTimes,
   FaStickyNote,
 } from "react-icons/fa";
+import { mockCourses } from "../mocks/mockData";
 
 const CoursePage = () => {
   const [names, setNames] = useState("");
@@ -75,46 +76,12 @@ const CoursePage = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`http://localhost:5000/api/all-data/courses/by/id/${courseId}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        const formattedData = {
-          id: data.id || data._id,
-          actor: data.actor || "Unknown",
-          image: data.image || data.cover_image || "../avatarAdmin.png",
-          name: data.name || "Untitled Course",
-          category: data.category
-            ? typeof data.category === "object"
-              ? `${data.category.field} - ${data.category.name}`
-              : data.category
-            : "Uncategorized",
-          categoryObject: data.category || {
-            name: "Uncategorized",
-            field: "Other",
-          },
-          price: data.price || 0,
-          date: data.date
-            ? new Date(data.date).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          statusbar: data.statusbar || "Chờ duyệt",
-          certificate: data.certificate || null,
-          lession: data.lession || null,
-
-          outstanding: data.outstanding || false,
-          description: data.description || "Chưa có mô tả",
-        };
-        setCourse(formattedData);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("fetch() error:", err);
-        setIsLoading(false);
-      });
+    // Sử dụng dữ liệu mẫu
+    const foundCourse = mockCourses.find((c) => c.id === parseInt(courseId));
+    if (foundCourse) {
+      setCourse(foundCourse);
+    }
+    setIsLoading(false);
   }, [courseId]);
 
   if (isLoading) {

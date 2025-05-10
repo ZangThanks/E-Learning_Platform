@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { mockCourses } from "../mocks/mockData";
 import CourseForm from "../components/teacher/CourseForm";
 import VideoUpload from "../components/teacher/VideoUpload";
 
@@ -12,38 +13,13 @@ function TeacherCourseManagement({ isAdding = false, isEditing = false }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const userInfo = JSON.parse(localStorage.getItem("user"));
-        if (!userInfo) {
-          throw new Error("User not found");
-        }
-
-        const response = await fetch(
-          `http://localhost:5000/api/teacher/courses/${userInfo.id}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch courses");
-        }
-
-        const data = await response.json();
-        setCourses(data);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!isAdding) {
-      fetchCourses();
-    }
-
-    if (isEditing && courseId) {
-      fetchCourseDetails(courseId);
-    }
-  }, [courseId, isEditing, isAdding]);
+    // Sử dụng dữ liệu mẫu
+    const teacherCourses = mockCourses.filter(
+      (course) => course.actor === "John Doe"
+    );
+    setCourses(teacherCourses);
+    setLoading(false);
+  }, []);
 
   const fetchCourseDetails = async (id) => {
     try {

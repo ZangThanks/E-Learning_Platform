@@ -1,38 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getImageSrc } from "../utils/processBase64";
+import { mockCourses, mockUsers } from "../mocks/mockData";
 
 function MyCoursePage() {
-  const [userData, setUserData] = useState(null);
   const [userCourses, setUserCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const userDataString = localStorage.getItem("user");
-    if (userDataString) {
-      try {
-        const parsedUserData = JSON.parse(userDataString);
-        setUserData(parsedUserData);
-
-        fetch(`http://localhost:5000/api/user-courses/${parsedUserData.id}`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (!data.error) {
-              setUserCourses(data);
-            }
-          })
-          .catch((err) => {
-            setError("Không thể tải khóa học");
-            console.error("Error fetching courses:", err);
-          })
-          .finally(() => setLoading(false));
-      } catch (error) {
-        console.error("Lỗi localStorage:", error);
-        setLoading(false);
-      }
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      // Lọc khóa học của user từ dữ liệu mẫu
+      const userEnrolledCourses = mockCourses.filter((course) =>
+        mockUsers.find((u) => u.id === user.id)?.courses.includes(course.id)
+      );
+      setUserCourses(userEnrolledCourses);
     }
+    setLoading(false);
   }, []);
 
   if (loading) {

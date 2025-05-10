@@ -26,7 +26,7 @@ const NavbarMenu = [
     id: 4,
     title: "About Us",
     path: "/about",
-  }
+  },
 ];
 
 function Navbar() {
@@ -44,6 +44,7 @@ function Navbar() {
   }, []);
 
   const handleLogout = () => {
+    // Xóa thông tin user khỏi localStorage
     localStorage.removeItem("user");
     setIsLoggedIn(false);
     setUser(null);
