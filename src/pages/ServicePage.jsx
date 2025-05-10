@@ -1,6 +1,58 @@
 import { useEffect, useState } from "react";
 import CourseCard from "../components/card/CourseCard";
 
+// Dữ liệu mẫu
+const mockCourses = [
+  {
+    id: 1,
+    actor: "John Doe",
+    cover_image: "../design_figma.png",
+    name: "React JS từ cơ bản đến nâng cao",
+    category: {
+      field: "Lập trình",
+      name: "Web Development",
+    },
+    price: 1200000,
+    date: "2025-05-10",
+    statusbar: "Đã duyệt",
+    certificate: true,
+    description: "Khóa học React toàn diện từ cơ bản đến nâng cao",
+    outstanding: true,
+  },
+  {
+    id: 2,
+    actor: "Jane Smith",
+    cover_image: "../design_figma.png",
+    name: "UI/UX Design Masterclass",
+    category: {
+      field: "Thiết kế",
+      name: "UI/UX",
+    },
+    price: 1500000,
+    date: "2025-05-09",
+    statusbar: "Đã duyệt",
+    certificate: true,
+    description: "Học thiết kế UI/UX chuyên nghiệp",
+    outstanding: false,
+  },
+  {
+    id: 3,
+    actor: "Mike Johnson",
+    cover_image: "../javabg.png",
+    name: "Digital Marketing",
+    category: {
+      field: "Marketing",
+      name: "Digital Marketing",
+    },
+    price: 0,
+    date: "2025-05-08",
+    statusbar: "Đã duyệt",
+    certificate: true,
+    description: "Khóa học Digital Marketing miễn phí",
+    outstanding: true,
+  },
+];
+
 function ServicePage() {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
@@ -11,56 +63,30 @@ function ServicePage() {
   const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/all-data/courses")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        console.log("fetch() got:", data);
-        const formattedData = data.map((course) => ({
-          id: course.id || course._id,
-          actor: course.actor || "Unknown",
-          image: course.image || course.cover_image || "../avatarAdmin.png",
-          name: course.name || "Untitled Course",
-          category: course.category
-            ? typeof course.category === "object"
-              ? `${course.category.field} - ${course.category.name}`
-              : course.category
-            : "Uncategorized",
-          categoryObject: course.category || {
-            name: "Uncategorized",
-            field: "Other",
-          },
-          price: course.price || 0,
-          date: course.date
-            ? new Date(course.date).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          statusbar: course.statusbar || "Chờ duyệt",
-          certificate: course.certificate || null,
-          video_courses: course.video_courses || [],
-          outstanding: course.outstanding || false,
+    // Thay thế API call bằng dữ liệu mẫu
+    const formattedData = mockCourses.map((course) => ({
+      id: course.id,
+      actor: course.actor,
+      image: course.cover_image || "../avatarAdmin.png",
+      name: course.name,
+      category: `${course.category.field} - ${course.category.name}`,
+      categoryObject: course.category,
+      price: course.price,
+      date: course.date,
+      statusbar: course.statusbar,
+      certificate: course.certificate,
+      outstanding: course.outstanding,
+      description: course.description,
+    }));
 
-          _original: course,
-          description: course.description || "Chưa có mô tả",
-        }));
-        setCourses(formattedData);
-        setFilteredCourses(formattedData);
+    setCourses(formattedData);
+    setFilteredCourses(formattedData);
 
-        const uniqueCategories = [
-          ...new Set(
-            formattedData.map(
-              (course) => course.categoryObject?.field || "Other"
-            )
-          ),
-        ];
-        setCategories(["All", ...uniqueCategories]);
-      })
-      .catch((err) => {
-        console.error("fetch() error:", err);
-      });
+    // Tạo danh sách categories từ dữ liệu mẫu
+    const uniqueCategories = [
+      ...new Set(formattedData.map((course) => course.categoryObject?.field)),
+    ];
+    setCategories(["All", ...uniqueCategories]);
   }, []);
 
   useEffect(() => {

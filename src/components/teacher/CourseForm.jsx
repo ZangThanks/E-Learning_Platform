@@ -2,6 +2,39 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaPlus, FaTrash, FaVideo } from "react-icons/fa";
 
+// Dữ liệu mẫu cho khóa học
+const mockCourses = [
+  {
+    id: 1,
+    name: "Khóa học React JS từ cơ bản đến nâng cao",
+    description: "Học React JS từ những khái niệm cơ bản đến advanced patterns",
+    price: 1200000,
+    category: {
+      name: "Lập trình",
+      field: "Web Development",
+    },
+    cover_image: "https://example.com/react-course.jpg",
+    actor: "John Doe",
+    outstanding: true,
+    date: new Date().toISOString(),
+    statusbar: "Đã duyệt",
+    certificate: true,
+    lession: [
+      {
+        lession_id: "lesson1",
+        name: "Giới thiệu React JS",
+        video_courses: [
+          {
+            title: "React là gì?",
+            link: "https://www.youtube.com/watch?v=example1",
+            createAt: new Date().toISOString(),
+          },
+        ],
+      },
+    ],
+  },
+];
+
 function CourseForm({ initialData = null }) {
   const navigate = useNavigate();
   const params = useParams();
@@ -34,52 +67,84 @@ function CourseForm({ initialData = null }) {
   const [isCustomField, setIsCustomField] = useState(false);
 
   const predefinedFields = [
-    { label: "Lập trình" },
-    { label: "Thiết kế" },
-    { label: "Kinh doanh" },
-    { label: "Marketing" },
-    { label: "Âm nhạc" },
-    { label: "Khác" },
+    { label: "Lập trình", value: "programming" },
+    { label: "Thiết kế", value: "design" },
+    { label: "Kinh doanh", value: "business" },
+    { label: "Marketing", value: "marketing" },
+    { label: "Âm nhạc", value: "music" },
+    { label: "Khác", value: "other" },
   ];
 
   const isEditing = Boolean(initialData);
 
   useEffect(() => {
-    if (initialData && isEditing) {
-      const matchingField = predefinedFields.find(
-        (field) => field.label === initialData.category?.name
+    if (params.courseId) {
+      // Tìm khóa học từ dữ liệu mẫu thay vì gọi API
+      const course = mockCourses.find(
+        (c) => c.id === parseInt(params.courseId)
+      );
+      if (course) {
+        setFormData({
+          id: course.id,
+          name: course.name,
+          description: course.description,
+          price: course.price,
+          category: course.category,
+          cover_image: course.cover_image,
+          coverImagePreview: course.cover_image,
+          lession: course.lession,
+        });
+      }
+    }
+  }, [params.courseId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const courseData = {
+        id: isEditing ? formData.id : Date.now(),
+        name: formData.name,
+        actor: "Demo User",
+        category: formData.category,
+        outstanding: false,
+        cover_image: formData.cover_image,
+        price: parseFloat(formData.price),
+        date: new Date().toISOString(),
+        statusbar: "Chờ duyệt",
+        certificate: false,
+        description: formData.description,
+        lession: formData.lession,
+      };
+
+      // Thay vì gọi API, lưu vào localStorage
+      const existingCourses = JSON.parse(
+        localStorage.getItem("courses") || "[]"
       );
 
-      setFormData({
-        //id: initialData.id,
-        name: initialData.name || "",
-        description: initialData.description || "",
-        price: initialData.price || 0,
-        category: {
-          name: initialData.category?.name || "",
-          field: initialData.category?.field || "",
-        },
-        cover_image: initialData.cover_image || null,
-        coverImagePreview: initialData.cover_image,
-        lession: initialData.lession || [
-          {
-            lession_id: `lession${Date.now()}`,
-            name: "",
-            video_courses: [
-              {
-                title: "",
-                link: "",
-                createAt: new Date().toISOString(),
-              },
-            ],
-          },
-        ],
-      });
+      if (isEditing) {
+        const courseIndex = existingCourses.findIndex(
+          (c) => c.id === courseData.id
+        );
+        if (courseIndex !== -1) {
+          existingCourses[courseIndex] = courseData;
+        }
+      } else {
+        existingCourses.push(courseData);
+      }
 
-      setIsCustomField(!matchingField);
+      localStorage.setItem("courses", JSON.stringify(existingCourses));
+      navigate("/courses");
+    } catch (error) {
+      setError("Có lỗi xảy ra khi lưu khóa học");
+    } finally {
+      setLoading(false);
     }
-  }, [initialData, isEditing]);
+  };
 
+  // Giữ nguyên các hàm xử lý khác
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -88,11 +153,15 @@ function CourseForm({ initialData = null }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({
-        ...formData,
-        cover_image: file,
-        coverImagePreview: URL.createObjectURL(file),
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({
+          ...formData,
+          cover_image: reader.result,
+          coverImagePreview: reader.result,
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -108,77 +177,6 @@ function CourseForm({ initialData = null }) {
         ...formData,
         category: { ...formData.category, name: e.target.value },
       });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const userInfo = JSON.parse(localStorage.getItem("user"));
-
-      let courseId = formData.id;
-      if (!isEditing) {
-        const idResponse = await fetch(
-          "http://localhost:5000/api/latest-course-id"
-        );
-        const { nextId } = await idResponse.json();
-        courseId = nextId;
-      }
-
-      const courseData = {
-        id: courseId,
-        name: formData.name,
-        actor: userInfo?.name || "Unknown",
-        category: formData.category,
-        outstanding: initialData?.outstanding || false,
-        cover_image: formData.cover_image,
-        price: parseFloat(formData.price),
-        date: new Date().toISOString(),
-        statusbar: "Chờ duyệt",
-        certificate: initialData?.certificate || null,
-        description: formData.description,
-        lession: formData.lession,
-      };
-
-      const response = await fetch(
-        isEditing
-          ? `http://localhost:5000/api/all-data/courses/by/id/${params.courseId}`
-          : "http://localhost:5000/api/all-data/courses",
-        {
-          method: isEditing ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(courseData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${isEditing ? "update" : "create"} course`);
-      }
-
-      if (!isEditing) {
-        await fetch("http://localhost:5000/api/author-courses", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: userInfo.id,
-            course_id: courseId,
-            posted_date: new Date().toISOString(),
-          }),
-        });
-      }
-
-      navigate("/courses");
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -513,6 +511,11 @@ function CourseForm({ initialData = null }) {
       </div>
     </form>
   );
+}
+
+// Khởi tạo dữ liệu mẫu trong localStorage nếu chưa có
+if (!localStorage.getItem("courses")) {
+  localStorage.setItem("courses", JSON.stringify(mockCourses));
 }
 
 export default CourseForm;

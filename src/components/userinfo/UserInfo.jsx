@@ -25,7 +25,7 @@ function UserInfo({ user, onLogout }) {
         onClick={() => setIsOpen(!isOpen)}
       >
         <img
-          src={getImageSrc(user?.avatarData || "")}
+          src="../avartarAdmin.png"
           alt="Avatar"
           className="w-8 h-8 rounded-2xl"
         />

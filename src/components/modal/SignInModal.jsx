@@ -2,6 +2,37 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Youtube, Instagram, Github, Linkedin, Facebook } from "lucide-react";
 
+// Dữ liệu người dùng mẫu
+const mockUsers = [
+  {
+    id: 1,
+    username: "admin",
+    password: "admin123",
+    name: "Admin User",
+    email: "admin@example.com",
+    role: "admin",
+    avatarUrl: "../avartarAdmin.png",
+  },
+  {
+    id: 2,
+    username: "teacher",
+    password: "teacher123",
+    name: "Huynh Thanh Giang",
+    email: "teacher@example.com",
+    role: "teacher",
+    avatarUrl: "../avartarAdmin.png",
+  },
+  {
+    id: 3,
+    username: "student",
+    password: "student123",
+    name: "Phan Phuoc Hiep",
+    email: "student@example.com",
+    role: "student",
+    avatarUrl: "../avartarAdmin.png",
+  },
+];
+
 function SignInModal({ isOpen, onClose, onSignUpClick }) {
   const [userName, setUserName] = useState("");
   const [pass, setPass] = useState("");
@@ -13,31 +44,39 @@ function SignInModal({ isOpen, onClose, onSignUpClick }) {
       onClose();
     }
   };
+
   const handleSignIn = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: userName,
-          password: pass,
-        }),
-      });
+      // Giả lập delay của API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const data = await response.json();
+      // Tìm user trong dữ liệu mẫu
+      const user = mockUsers.find(
+        (u) => u.username === userName && u.password === pass
+      );
 
-      if (data.success) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+      if (user) {
+        // Lưu thông tin user vào localStorage
+        const userData = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatarUrl: user.avatarUrl,
+          account: {
+            user_name: user.username,
+          },
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
         onClose();
         window.location.reload();
       } else {
-        setError(data.message);
+        setError("Tên đăng nhập hoặc mật khẩu không chính xác");
       }
     } catch (err) {
       console.error("Sign in error:", err);
