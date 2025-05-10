@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react";
-import { getImageSrc } from "../../utils/processBase64";
 import { Link } from "react-router-dom";
+import { getImageSrc } from "../../utils/processBase64";
+import { mockAuthors } from "../../mocks/mockData";
 
 function CourseCard({ course }) {
   const [author, setAuthor] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/course-author/${course.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.error) {
-          setAuthor(data);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching author: ", err);
-      });
-  }, [course.id]);
+    // Thay thế API call bằng dữ liệu mẫu
+    const foundAuthor = mockAuthors.find((a) => a.name === course.actor);
+    setAuthor(foundAuthor || null);
+  }, [course.actor]);
 
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 flex flex-col h-full">

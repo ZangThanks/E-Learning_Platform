@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { mockCourses, mockAuthors } from "../mocks/mockData";
 import CheckoutModal from "../components/modal/CheckoutModal";
 import { getImageSrc } from "../utils/processBase64";
-import { mockCourses } from "../mocks/mockData";
 
 function CourseDetailPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
+  const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
@@ -16,10 +17,13 @@ function CourseDetailPage() {
   useEffect(() => {
     setLoading(true);
     console.log(courseId);
-    // Thay thế API call bằng dữ liệu mẫu
+    // Replace API call with mock data
     const foundCourse = mockCourses.find((c) => c.id === parseInt(courseId));
     if (foundCourse) {
       setCourse(foundCourse);
+      // Tìm thông tin author
+      const foundAuthor = mockAuthors.find((a) => a.name === foundCourse.actor);
+      setAuthor(foundAuthor);
     }
     setLoading(false);
   }, [courseId]);
@@ -149,7 +153,7 @@ function CourseDetailPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Category: {course.category}
+                  Category: {course?.category?.field} - {course?.category?.name}
                 </li>
                 <li className="flex items-center">
                   <svg

@@ -1,91 +1,68 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { mockCourses } from "../mocks/mockData";
 import CourseForm from "../components/teacher/CourseForm";
-import VideoUpload from "../components/teacher/VideoUpload";
 
 function TeacherCourseManagement({ isAdding = false, isEditing = false }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const { courseId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Sử dụng dữ liệu mẫu
-    const teacherCourses = mockCourses.filter(
+    // Lấy dữ liệu từ localStorage thay vì mockCourses
+    const storedCourses = JSON.parse(localStorage.getItem("courses") || "[]");
+    const teacherCourses = storedCourses.filter(
       (course) => course.actor === "John Doe"
     );
     setCourses(teacherCourses);
     setLoading(false);
   }, []);
 
-  const fetchCourseDetails = async (id) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/all-data/courses/by/id/${id}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch course details");
-      }
-      const data = await response.json();
-      setSelectedCourse({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        category: data.category,
-        cover_image: data.cover_image,
-        lession: data.lession || [],
-      });
-    } catch (error) {
-      console.error("Error fetching course details:", error);
-      setError(error.message);
-    }
-  };
-
   const handleAddCourse = () => {
+    setSelectedCourse(null);
     navigate("/teacher/courses/add");
   };
 
   const handleEditCourse = (courseId) => {
-    navigate(`/teacher/courses/edit/${courseId}`);
-  };
-
-  const handleDeleteCourse = async (courseId) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/api/all-data/courses/by/id/${courseId}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error("Failed to delete course");
-        }
-
-        setCourses(courses.filter((course) => course.id !== courseId));
-      } catch (error) {
-        console.error("Error deleting course:", error);
-      }
+    // Tìm khóa học được chọn từ danh sách courses
+    const courseToEdit = courses.find((course) => course.id === courseId);
+    if (courseToEdit) {
+      setSelectedCourse(courseToEdit);
+      navigate(`/teacher/courses/edit/${courseId}`);
     }
   };
 
+  const handleDeleteCourse = (courseId) => {
+    if (window.confirm("Bạn có chắc muốn xóa khóa học này?")) {
+      // Xóa khỏi localStorage
+      const storedCourses = JSON.parse(localStorage.getItem("courses") || "[]");
+      const updatedCourses = storedCourses.filter(
+        (course) => course.id !== courseId
+      );
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+
+      // Cập nhật state
+      setCourses(courses.filter((course) => course.id !== courseId));
+    }
+  };
+
+  // Hiển thị form thêm mới
   if (isAdding) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Add New Course</h1>
+        <h1 className="text-2xl font-bold mb-6">Thêm khóa học mới</h1>
         <CourseForm />
       </div>
     );
   }
 
+  // Hiển thị form chỉnh sửa với dữ liệu của khóa học được chọn
   if (isEditing && selectedCourse) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Edit Course</h1>
+        <h1 className="text-2xl font-bold mb-6">Chỉnh sửa khóa học</h1>
         <CourseForm initialData={selectedCourse} />
       </div>
     );
@@ -113,33 +90,43 @@ function TeacherCourseManagement({ isAdding = false, isEditing = false }) {
           {courses.length === 0 ? (
             <p>Chưa có khóa học nào. Hãy bắt đầu thêm khóa học mới.</p>
           ) : (
-            <ul className="grid grid-cols-3 gap-6">
+            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((course) => (
                 <li
                   key={course.id}
-                  className="border-b rounded py-4 px-4 bg-gray-50 shadow-md hover:shadow-xl hover:bg-gray-100 duration-200"
+                  className="border rounded-lg p-4 bg-white shadow hover:shadow-lg transition-shadow duration-200"
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-medium">{course.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        Ngày tạo:{" "}
-                        {new Date(course.posted_date).toLocaleDateString()}
+                  <div className="flex h-full">
+                    <div className="">
+                      <h3 className="font-medium text-lg mb-2">
+                        {course.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Ngày tạo: {new Date(course.date).toLocaleDateString()}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        Trạng thái: {course.statusbar}
+                      <p className="text-sm text-gray-600 mb-4">
+                        Trạng thái:{" "}
+                        <span
+                          className={`px-2 py-1 rounded ${
+                            course.statusbar === "Đã duyệt"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {course.statusbar}
+                        </span>
                       </p>
                     </div>
-                    <div className="flex items-center justify-between space-x-2 gap-2">
+                    <div className="flex justify-end gap-2 mt-4">
                       <button
                         onClick={() => handleEditCourse(course.id)}
-                        className="text-green-500 hover:underline text-base"
+                        className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
                       >
                         Chỉnh sửa
                       </button>
                       <button
                         onClick={() => handleDeleteCourse(course.id)}
-                        className="text-red-500 hover:underline text-base"
+                        className="px-3 py-1 text-red-600 hover:bg-red-50 rounded"
                       >
                         Xóa
                       </button>

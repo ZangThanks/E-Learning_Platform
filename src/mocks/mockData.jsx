@@ -67,17 +67,31 @@ export const mockCourses = [
   },
 ];
 
-export const mockUsers = [
+export const mockAuthors = [
   {
     id: 1,
     name: "John Doe",
-    email: "john@example.com",
-    account: {
-      user_name: "johndoe",
-      password: "password123",
-    },
-    role: "student",
     avatarUrl: "../avatarAdmin.png",
-    courses: [1, 2],
+    bio: "Senior React Developer",
   },
 ];
+
+export const mockUsers = [
+  {
+    id: 1,
+    name: "Student User",
+    email: "studen",
+    password: "student123",
+    role: "student",
+    avatarUrl: "../avatarAdmin.png",
+    enrolledCourses: [1, 2],
+  },
+];
+
+export const mockPaymentInfo = {
+  bankName: "VietComBank",
+  accountNumber: "1234567890",
+  accountHolder: "NGUYEN VAN A",
+  amount: 1200000,
+  qrCode: "data:image/png;base64,...",
+};

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getImageSrc } from "../utils/processBase64";
-import { mockCourses, mockUsers } from "../mocks/mockData";
+import { mockCourses } from "../mocks/mockData";
+import { mockUsers } from "../mocks/mockUsers";
 
 function MyCoursePage() {
   const [userCourses, setUserCourses] = useState([]);
@@ -10,11 +11,20 @@ function MyCoursePage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = {
+      id: 2,
+      name: "Teacher User",
+      email: "teacher",
+      password: "teacher123",
+      role: "teacher",
+      avatarUrl: "../avatarAdmin.png",
+    }; //JSON.parse(localStorage.getItem("user"));
     if (user) {
-      // Lọc khóa học của user từ dữ liệu mẫu
+      // Filter enrolled courses from mock data
       const userEnrolledCourses = mockCourses.filter((course) =>
-        mockUsers.find((u) => u.id === user.id)?.courses.includes(course.id)
+        mockUsers
+          .find((u) => u.id === user.id)
+          ?.enrolledCourses.includes(course.id)
       );
       setUserCourses(userEnrolledCourses);
     }
